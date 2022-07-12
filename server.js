@@ -1,13 +1,17 @@
 require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
+const helmet = require("helmet");
+const cors = require("cors");
 const POKEDEX = require("./pokedex.json");
-
-console.log(process.env.API_TOKEN);
 
 const app = express();
 
-app.use(morgan("dev"));
+const morganSetting = process.env.NODE_ENV === "production" ? "tiny" : "common";
+
+app.use(morgan(morganSetting));
+app.use(helmet());
+app.use(cors());
 
 const validTypes = [
 	`Bug`,
@@ -42,8 +46,6 @@ app.use(function validateBearerToken(req, res, next) {
 		return res.status(401).json({ error: "Unauthorized request" });
 	}
 
-	console.log("validate bearer token middleware");
-
 	// move to the next middleware
 	next();
 });
@@ -77,7 +79,7 @@ function handleGetPokemon(req, res) {
 
 app.get("/pokemon", handleGetPokemon);
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
 	console.log(`Server listening at http://localhost:${PORT}`);
